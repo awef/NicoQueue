@@ -46,6 +46,6 @@ end
 directory "build"
 file_copy "build/manifest.json", "src/manifest.json"
 file_copy "build/background.html", "src/background.html"
-file_copy "build/qunit.js", "src/qunit.js"
-file_copy "build/qunit.css", "src/qunit.css"
+file_copy "build/qunit.js", "lib/qunit/qunit/qunit.js"
+file_copy "build/qunit.css", "lib/qunit/qunit/qunit.css"
 file_copy "build/test.html", "src/test.html"
