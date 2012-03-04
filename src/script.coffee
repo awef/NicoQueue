@@ -33,13 +33,14 @@ chrome.contextMenus -> queue -> update_badge
 URLはchrome.*部で整形する
 ###
 
-(->
+do ->
   fix_url = (url) ->
     url.replace(/[?#].*$/, "")
 
   update_badge = (queue_length) ->
     text = if queue_length is 0 then "" else queue_length.toString(10)
-    window.chrome?.browserAction?.setBadgeText(text: text)
+    chrome.browserAction.setBadgeText(text: text)
+    return
 
   notice = (title, text) ->
     title = title or document.title
@@ -47,6 +48,7 @@ URLはchrome.*部で整形する
     notification = webkitNotifications.createNotification("", title, text)
     notification.show()
     setTimeout((-> notification.cancel()), 3000)
+    return
 
   queue =
     push: (url) ->
@@ -77,6 +79,7 @@ URLはchrome.*部で整形する
         data.splice(data.indexOf(url), 1)
         localStorage["queue"] = JSON.stringify(data)
         update_badge(this.length)
+      return
   queue.__defineGetter__ "length", ->
     JSON.parse(localStorage["queue"] or "[]").length
 
@@ -85,7 +88,7 @@ URLはchrome.*部で整形する
     url.slice(0, target_pref.length) is target_pref
 
   current_tabs = null
-  (->
+  do ->
     tabs = {}
     tabs_length = 0
 
@@ -100,22 +103,25 @@ URLはchrome.*部で整形する
             chrome.tabs.remove(tab_id)
           else
             queue.remove(tab_url)
+        return
       update: (tab_id, tab_url) ->
         if tabs[tab_id] and not is_target(tab_url)
-          this.remove(tab_id)
+          @remove(tab_id)
         else
-          this.add(tab_id, tab_url)
+          @add(tab_id, tab_url)
+        return
       remove: (tab_id) ->
         if tabs[tab_id]
           delete tabs[tab_id]
           tabs_length--
+        return
       contains: (url) ->
         for tab_url of tabs
           return true if tab_url is url
         false
     current_tabs.__defineGetter__ "length", ->
       tabs_length
-  )()
+    return
 
   if location.pathname is "/background.html"
     update_badge(queue.length)
@@ -127,13 +133,16 @@ URLはchrome.*部で整形する
 
       chrome.tabs.onCreated.addListener (tab) ->
         current_tabs.add(tab.id, fix_url(tab.url))
+        return
 
       chrome.tabs.onRemoved.addListener (tab_id) ->
         current_tabs.remove(tab_id)
+        return
 
       chrome.tabs.onUpdated.addListener (tab_id, info) ->
         if info.url?
           current_tabs.update(tab_id, fix_url(info.url))
+        return
 
     chrome.contextMenus.create
       title: "NicoQueueに格納"
@@ -143,6 +152,7 @@ URLはchrome.*部で整形する
       onclick: (info, tab) ->
         queue.push(fix_url(tab.url))
         chrome.tabs.remove(tab.id)
+        return
 
     chrome.contextMenus.create
       title: "リンク先をNicoQueueに格納"
@@ -154,11 +164,14 @@ URLはchrome.*部で整形する
         url = fix_url(info.linkUrl)
         return if current_tabs.contains(url)
         queue.push(url)
+        return
 
     chrome.browserAction.onClicked.addListener (tab) ->
       if current_tabs.length < 2 and (url = queue.pop().url)
         chrome.tabs.getSelected null, (tab) ->
           chrome.tabs.create(url: url, index: tab.index + 1)
+          return
+      return
   else
     window.app = {fix_url, queue}
-)()
+  return

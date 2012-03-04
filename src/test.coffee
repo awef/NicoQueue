@@ -1,5 +1,3 @@
-console.log app
-
 module("fix_url")
 
 test "URLからクエリとハッシュを削除する", 4, ->
@@ -8,17 +6,20 @@ test "URLからクエリとハッシュを削除する", 4, ->
   strictEqual(app.fix_url(url + "#test"), url)
   strictEqual(app.fix_url(url + "?test"), url)
   strictEqual(app.fix_url(url + "?test#test"), url)
+  return
 
 module "queue"
   setup: ->
     if localStorage.queue?
-      this._queue = localStorage.queue
+      @_queue = localStorage.queue
       delete localStorage.queue
+    return
   teardown: ->
-    if this._queue?
+    if @_queue?
       localStorage.queue = this._queue
     else
       delete localStorage.queue
+    return
 
 test "任意のURLをキューに追加出来る", 13, ->
   url1 = "http://www.nicovideo.jp/watc9/sm1"
@@ -43,7 +44,9 @@ test "任意のURLをキューに追加出来る", 13, ->
   deepEqual(app.queue.pop(), {url: null, length: 0})
   strictEqual(app.queue.length, 0)
   strictEqual(localStorage.queue, """[]""")
+  return
 
 test "キューが空の場合にqueue.popした場合は、urlがnullになる", 2, ->
   deepEqual(app.queue.pop(), {url: null, length: 0})
   strictEqual(app.queue.length, 0)
+  return
