@@ -1,15 +1,41 @@
-SRC = "src"
-BUILD = "build"
+task :default => [
+  "build",
+  "build/manifest.json",
+  "build/background.html",
+  "build/script.js",
+  "build/icon_16x16.png",
+  "build/icon_19x19.png",
+  "build/icon_48x48.png",
+  "build/icon_128x128.png",
+  "build/qunit.js",
+  "build/qunit.css",
+  "build/test.html",
+  "build/test.js"
+]
 
-p_cp = proc do |t|
-  sh "cp #{t.prerequisites[0]} #{t.name}"
+task :clean do
+  sh "rm -rf build"
 end
 
-p_coffee = proc do |t|
-  sh "cat #{t.prerequisites.join(" ")} | coffee -cbsp > #{t.name}"
+def coffee(src, output)
+  if src.is_a? Array
+    src = src.join(" ")
+  end
+
+  sh "coffee -cbj #{output} #{src}"
 end
 
-rule ".png" => "#{SRC}/%{_\\d+x\\d+$,}n.svg" do |t|
+def file_copy(target, src)
+  file target => src, do
+    sh "cp #{src} #{target}"
+  end
+end
+
+rule ".js" => "%{^build/,src/}X.coffee" do |t|
+  coffee(t.prerequisites, t.name)
+end
+
+rule ".png" => "src/%{_\\d+x\\d+$,}n.svg" do |t|
   /_(\d+)x(\d+)\.png$/ =~ t.name
   sh "convert\
     -background transparent\
@@ -17,31 +43,9 @@ rule ".png" => "#{SRC}/%{_\\d+x\\d+$,}n.svg" do |t|
     #{t.prerequisites[0]} #{t.name}"
 end
 
-task :default => [
-  BUILD,
-  "#{BUILD}/manifest.json",
-  "#{BUILD}/background.html",
-  "#{BUILD}/script.js",
-  "#{BUILD}/icon_16x16.png",
-  "#{BUILD}/icon_19x19.png",
-  "#{BUILD}/icon_48x48.png",
-  "#{BUILD}/icon_128x128.png",
-  "#{BUILD}/qunit.js",
-  "#{BUILD}/qunit.css",
-  "#{BUILD}/test.html",
-  "#{BUILD}/test.js"
-]
-
-task :clean do
-  sh "rm -rf #{BUILD}"
-end
-
-directory BUILD
-file "#{BUILD}/manifest.json" => "#{SRC}/manifest.json", &p_cp
-file "#{BUILD}/background.html" => "#{SRC}/background.html", &p_cp
-file "#{BUILD}/script.js" => "#{SRC}/script.coffee", &p_coffee
-file "#{BUILD}/qunit.js" => "#{SRC}/qunit.js", &p_cp
-file "#{BUILD}/qunit.css" => "#{SRC}/qunit.css", &p_cp
-file "#{BUILD}/test.html" => "#{SRC}/test.html", &p_cp
-file "#{BUILD}/test.js" => "#{SRC}/test.coffee", &p_coffee
-
+directory "build"
+file_copy "build/manifest.json", "src/manifest.json"
+file_copy "build/background.html", "src/background.html"
+file_copy "build/qunit.js", "src/qunit.js"
+file_copy "build/qunit.css", "src/qunit.css"
+file_copy "build/test.html", "src/test.html"
