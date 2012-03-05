@@ -17,6 +17,16 @@ task :clean do
   sh "rm -rf build"
 end
 
+task :test do
+  sh "google-chrome chrome-extension://#{debug_id}/test.html"
+end
+
+def debug_id
+  require "digest"
+  hash = Digest::SHA256.hexdigest(File.absolute_path("build"))
+  hash[0...32].tr("0-9a-f", "a-p")
+end
+
 def coffee(src, output)
   if src.is_a? Array
     src = src.join(" ")
