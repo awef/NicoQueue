@@ -123,7 +123,7 @@ do ->
       tabs_length
     return
 
-  if location.pathname is "/background.html"
+  if not /\/test\.html$/.test(location.href)
     update_badge(queue.length)
 
     chrome.windows.getAll {populate: true}, (array_of_window) ->

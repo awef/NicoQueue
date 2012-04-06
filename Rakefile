@@ -1,7 +1,6 @@
 task :default => [
   "build",
   "build/manifest.json",
-  "build/background.html",
   "build/script.js",
   "build/icon_16x16.png",
   "build/icon_19x19.png",
@@ -55,7 +54,6 @@ end
 
 directory "build"
 file_copy "build/manifest.json", "src/manifest.json"
-file_copy "build/background.html", "src/background.html"
 file_copy "build/qunit.js", "lib/qunit/qunit/qunit.js"
 file_copy "build/qunit.css", "lib/qunit/qunit/qunit.css"
 file_copy "build/test.html", "src/test.html"
