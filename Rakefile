@@ -35,7 +35,7 @@ def coffee(src, output)
 end
 
 def file_copy(target, src)
-  file target => src, do
+  file target => src do
     sh "cp #{src} #{target}"
   end
 end
